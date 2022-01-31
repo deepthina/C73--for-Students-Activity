@@ -73,12 +73,44 @@ export default class TransactionScreen extends Component {
     var transactionType = await this.checkBookAvailabilty();
 
     if (transactionType === "issue") {
-      this.initiateBookIssue();
-      Alert.alert("Book has been issued to the student!!");
+      var isEligible = await this.checkStudentEligibilityForBookIssue();
+
+      if (isEligible) {
+        this.initiateBookIssue();
+        Alert.alert("Book has been issued to the student!!");
+      }
     } else if (transactionType === "return") {
-      this.initiateBookReturn();
-      Alert.alert("The book has been returned to the library!!");
+      var isEligible = await this.checkStudentEligibilityForBookReturn();
+
+      if (isEligible) {
+        this.initiateBookReturn();
+        Alert.alert("Book has been returned to the Library!!");
+      }
     }
+  };
+
+  checkStudentEligibilityForBookIssue = async () => {
+  
+  };
+
+  checkStudentEligibilityForBookReturn = async () => {
+    var isStudentEligible = "";
+
+    const studentRef = await db
+      .collection("transactions")
+      .where("book_id", "==", this.state.bookId)
+      .get();
+
+    studentRef.docs.map((doc) => {
+      isStudentEligible =
+        doc.data().student_id === this.state.studentId
+          ? true
+          : (false,
+            this.setState({ bookId: "", studentId: "" }),
+            Alert.alert("The student is not the one who issued this book!!"));
+    });
+
+    return isStudentEligible;
   };
 
   checkBookAvailabilty = async () => {
